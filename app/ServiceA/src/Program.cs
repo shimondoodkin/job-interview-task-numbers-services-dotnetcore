@@ -6,6 +6,7 @@ using SharedProject.Data;
 using SharedProject.Models;
 using StackExchange.Redis;
 using System;
+using ServiceA;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "redis:6379";
 var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
-var redisChannelMessages = new RedisChannel("messages", RedisChannel.PatternMode.Auto);
+builder.Services.AddSingleton(new MessageService());
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -51,40 +53,16 @@ app.MapGet("/", (ApplicationDbContext context) =>
     return Results.Ok("ok");
 });
 
-
-async Task<IResult> sendMessage(String messageContent, ApplicationDbContext context, IConnectionMultiplexer redis)
+app.MapGet("/message", (MessageService messageService, ApplicationDbContext context, IConnectionMultiplexer redis) =>
 {
-    try
-    {
-        var message = new Message
-        {
-            Content = messageContent,
-            RandomNumber = new Random().Next(1, 10001)  // Generates a random number between 1 and 10000
-        };
-
-        context.Messages.Add(message);
-        context.SaveChanges();
-
-        await redis.GetSubscriber().PublishAsync(redisChannelMessages, message.RandomNumber);
-        // Console.WriteLine("saved to context db and published a message");
-        return Results.Ok(message);
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem(detail: ex.Message, statusCode: 500);
-    }
-}
-
-app.MapGet("/message", (ApplicationDbContext context, IConnectionMultiplexer redis) =>
-{
-    return sendMessage("test", context, redis);
+    return messageService.sendMessage("test", context, redis);
 })
-.WithDescription("creates a message with 'test' as message content and a random number");
+.WithDescription("creates a message with 'test' as message content and a random number")
+.WithOpenApi();
 
-
-app.MapPost("/message", (MessageDto dto, ApplicationDbContext context, IConnectionMultiplexer redis) =>
+app.MapPost("/message", (MessageDto dto, MessageService messageService, ApplicationDbContext context, IConnectionMultiplexer redis) =>
 {
-    return sendMessage(dto.Content, context, redis);
+    return messageService.sendMessage(dto.Content, context, redis);
 })
 .WithDescription("creates a message with given Content as message content and a random number")
 .WithOpenApi();
