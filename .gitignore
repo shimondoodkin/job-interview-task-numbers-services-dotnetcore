@@ -1,11 +1,46 @@
 .history
 app/.mono
-app/ServiceA/bin
-app/ServiceB/bin
-app/ServiceC/bin
-app/ServiceA/obj
-app/ServiceB/obj
-app/ServiceC/obj
 app-root
-redis_data/dump.rdb
+redis_data
 .mono
+
+
+# Build results
+app/ServiceA/[Dd]ebug/
+app/ServiceA/[Rr]elease/
+app/ServiceA/x64/
+app/ServiceA/x86/
+app/ServiceA/bld/
+app/ServiceA/[Bb]in/
+app/ServiceA/[Oo]bj/
+app/ServiceA/[Ll]ogs/
+
+
+# Build results
+app/ServiceB/[Dd]ebug/
+app/ServiceB/[Rr]elease/
+app/ServiceB/x64/
+app/ServiceB/x86/
+app/ServiceB/bld/
+app/ServiceB/[Bb]in/
+app/ServiceB/[Oo]bj/
+app/ServiceB/[Ll]ogs/
+
+
+# Build results
+app/ServiceC/[Dd]ebug/
+app/ServiceC/[Rr]elease/
+app/ServiceC/x64/
+app/ServiceC/x86/
+app/ServiceC/bld/
+app/ServiceC/[Bb]in/
+app/ServiceC/[Oo]bj/
+app/ServiceC/[Ll]ogs/
+
+
+# NuGet Packages Directory
+**/[Pp]ackages/
+*.nupkg
+# The packages folder can be ignored because of PackageReference
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
