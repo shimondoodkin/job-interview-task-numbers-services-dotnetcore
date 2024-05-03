@@ -1,0 +1,93 @@
+version: '3.8'
+volumes:
+  mssql_data:
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    restart:  unless-stopped
+    environment:
+      SA_PASSWORD: "example123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "21433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P example123 -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 3s
+      
+  sqlserver.configurator:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    volumes:
+      - ./init-mssql:/docker-entrypoint-initdb.d
+    depends_on:
+      mssql:
+        condition: service_healthy
+    command: >
+      bash -c '
+      /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P example123 -d master -i docker-entrypoint-initdb.d/init.sql;
+      echo "All done!";
+      '
+
+  redis:
+    image: redis:latest
+    restart:  unless-stopped
+    ports:
+      - "26379:6379"
+    volumes:
+      - ./redis_data:/data
+
+  servicea:
+    image: mcr.microsoft.com/dotnet/sdk:latest
+    restart:  unless-stopped
+
+#    build:
+#      context: ./app/ServiceA
+    depends_on:
+      - mssql
+    environment:
+      - ConnectionStrings__Default="Server=mssql;Database=master;User=sa;Password=example123;"
+    ports:
+      - "20081:80"
+
+  serviceb:
+    restart: unless-stopped
+    image: mcr.microsoft.com/dotnet/sdk:latest
+
+#    build:
+#      context: ./app/ServiceB
+    depends_on:
+      - mssql
+      - redis
+    environment:
+      - ConnectionStrings__Default="Server=mssql;Database=master;User=sa;Password=example123;"
+      - RedisSettings__ConnectionString="redis:26379"
+    ports:
+      - "20082:80"
+
+  servicec:
+    image: mcr.microsoft.com/dotnet/sdk:latest
+    restart:  unless-stopped
+#    build:
+#      context: ./app/ServiceC
+    depends_on:
+      - redis
+    environment:
+      - RedisSettings__ConnectionString="redis:26379"
+    ports:
+      - "20083:80"
+
+  app:
+    image: mcr.microsoft.com/dotnet/sdk:latest
+    restart:  unless-stopped
+    volumes:
+      - ./app:/app
+      - ./app-root:/root
+    working_dir: /app
+    command: tail -f /dev/null # Keeps the container running for development purposes
+    ports:
+      - "20080:80"

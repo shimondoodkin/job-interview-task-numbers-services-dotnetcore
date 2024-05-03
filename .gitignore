@@ -1,0 +1,11 @@
+.history
+app/.mono
+app/ServiceA/bin
+app/ServiceB/bin
+app/ServiceC/bin
+app/ServiceA/obj
+app/ServiceB/obj
+app/ServiceC/obj
+app-root
+redis_data/dump.rdb
+.mono
