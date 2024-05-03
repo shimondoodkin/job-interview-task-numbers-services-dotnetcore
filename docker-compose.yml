@@ -50,7 +50,8 @@ services:
     depends_on:
       - mssql
     environment:
-      - ConnectionStrings__Default="Server=mssql;Database=master;User=sa;Password=example123;"
+      - CONNECTION_STRING="Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
+      - REDIS_CONNECTION_STRING="redis:6379"
     ports:
       - "20081:80"
 
@@ -64,8 +65,8 @@ services:
       - mssql
       - redis
     environment:
-      - ConnectionStrings__Default="Server=mssql;Database=master;User=sa;Password=example123;"
-      - RedisSettings__ConnectionString="redis:26379"
+      - CONNECTION_STRING="Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
+      - REDIS_CONNECTION_STRING="redis:6379"
     ports:
       - "20082:80"
 
@@ -77,16 +78,20 @@ services:
     depends_on:
       - redis
     environment:
-      - RedisSettings__ConnectionString="redis:26379"
+      - CONNECTION_STRING="Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
+      - REDIS_CONNECTION_STRING="redis:6379"
     ports:
       - "20083:80"
 
-  app:
+  dev:
     image: mcr.microsoft.com/dotnet/sdk:latest
     restart:  unless-stopped
     volumes:
       - ./app:/app
       - ./app-root:/root
+    environment:
+      - CONNECTION_STRING="Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
+      - REDIS_CONNECTION_STRING="redis:6379"
     working_dir: /app
     command: tail -f /dev/null # Keeps the container running for development purposes
     ports:
