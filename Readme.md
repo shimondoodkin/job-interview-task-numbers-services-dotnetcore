@@ -28,3 +28,8 @@ to craete a context object i used the commands
 /app/ServiceA/> dotnet ef migrations add <name>
 /app/ServiceA/> dotnet ef database update
 
+ - desided to have pubsub notifications of inserted messages
+ - desided to use semaphore of max 1 for when processing messages and run it again it was triggered in middle of processing, used a loop to avoid max stack exceeded.
+ - if redis is shared desided to not use redis "CONFIG SET notify-keyspace-events KEA" and subscribe to "__keyspace@0__:message:*" because it could trigger on many otyher keys too much not requried, rather i desided to send it twice to redis once for storage and once for pubsub.
+ - 
+
