@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace ServiceA.Migrations
+namespace SharedProject.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -17,7 +17,8 @@ namespace ServiceA.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RandomNumber = table.Column<int>(type: "int", nullable: false)
+                    RandomNumber = table.Column<int>(type: "int", nullable: false),
+                    Processed = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

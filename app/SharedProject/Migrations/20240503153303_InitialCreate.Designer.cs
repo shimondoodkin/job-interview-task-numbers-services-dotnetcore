@@ -4,14 +4,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ServiceA.Data;
+using SharedProject.Data;
 
 #nullable disable
 
-namespace ServiceA.Migrations
+namespace SharedProject.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240503134820_InitialCreate")]
+    [Migration("20240503153303_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,7 +24,7 @@ namespace ServiceA.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ServiceA.Models.Message", b =>
+            modelBuilder.Entity("SharedProject.Models.Message", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -35,6 +35,9 @@ namespace ServiceA.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Processed")
+                        .HasColumnType("bit");
 
                     b.Property<int>("RandomNumber")
                         .HasColumnType("int");

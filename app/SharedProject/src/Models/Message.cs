@@ -1,4 +1,4 @@
-namespace ServiceA.Models
+namespace SharedProject.Models
 {
     public class Message
     {

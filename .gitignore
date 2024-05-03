@@ -38,6 +38,18 @@ app/ServiceC/[Oo]bj/
 app/ServiceC/[Ll]ogs/
 
 
+# Build results
+app/SharedProject/[Dd]ebug/
+app/SharedProject/[Rr]elease/
+app/SharedProject/x64/
+app/SharedProject/x86/
+app/SharedProject/bld/
+app/SharedProject/[Bb]in/
+app/SharedProject/[Oo]bj/
+app/SharedProject/[Ll]ogs/
+
+
+
 # NuGet Packages Directory
 **/[Pp]ackages/
 *.nupkg
