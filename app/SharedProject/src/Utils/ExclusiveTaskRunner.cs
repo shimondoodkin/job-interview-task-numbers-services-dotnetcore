@@ -29,7 +29,14 @@ namespace SharedProject.Utils
                     _runRequested = true;
                     try
                     {
-                        await _taskFunc();  // Run the stored task function
+                        try
+                        {
+                            await _taskFunc();  // Run the stored task function
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
                     }
                     finally
                     {

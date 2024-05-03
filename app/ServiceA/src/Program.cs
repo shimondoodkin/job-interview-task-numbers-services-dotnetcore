@@ -17,6 +17,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 });
 
+var redisConnectionString = "redis:6379";
+var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
+var redisChannelMessages = new RedisChannel("messages", RedisChannel.PatternMode.Auto);
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -32,19 +37,12 @@ using (var scope = app.Services.CreateScope())
     context.Database.Migrate();  // This applies pending migrations
 }
 
-var redisConnectionString = "redis:6379";
-var redis = ConnectionMultiplexer.Connect(redisConnectionString);
-builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
-var redisChannelMessages = new RedisChannel("messages", RedisChannel.PatternMode.Literal);
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Service A API v1"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ServiceA API v1"));
 }
-
-app.MapControllers();
 
 app.MapGet("/", (ApplicationDbContext context) =>
 {
@@ -65,8 +63,8 @@ async Task<IResult> sendMessage(String messageContent, ApplicationDbContext cont
         context.Messages.Add(message);
         context.SaveChanges();
 
-        await redis.GetSubscriber().PublishAsync(redisChannelMessages, "1");
-
+        await redis.GetSubscriber().PublishAsync(redisChannelMessages, message.RandomNumber);
+        // Console.WriteLine("saved to context db and published a message");
         return Results.Ok(message);
     }
     catch (Exception ex)

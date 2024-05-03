@@ -8,6 +8,7 @@ using System;
 using StackExchange.Redis;
 using SharedProject.Utils;
 using System.Diagnostics;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,24 +25,35 @@ var redisConnectionString = "redis:6379";
 var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 var redisChannelMessages = new RedisChannel("messages", RedisChannel.PatternMode.Literal);
+var redisChannelProcessedMessages = new RedisChannel("processed-messages", RedisChannel.PatternMode.Literal);
 
-
-
-var process = async Task (ApplicationDbContext context, IConnectionMultiplexer redis) =>
+var process = async (ApplicationDbContext context, IConnectionMultiplexer redis2) =>
 {
-    var messages = await context.Messages.Where(m => !m.Processed).ToListAsync();
-
-    var db = redis.GetDatabase();
-    foreach (var message in messages)
+    try
     {
-        message.RandomNumber *= 2;  // Example processing: doubling the number
-        message.Processed = true;
+        // Console.WriteLine("processing");
 
-        // Save processed number in Redis
-        await db.StringSetAsync($"Message:{message.Id}", message.RandomNumber, TimeSpan.FromHours(24));
+        var messages = await context.Messages.Where(m => !m.Processed).ToListAsync(); // error here line 36
+
+        var db = redis.GetDatabase();
+        foreach (var message in messages)
+        {
+            message.RandomNumber *= 2;  // Example processing: doubling the number
+            message.Processed = true;
+
+            // Save processed number in Redis
+            await db.StringSetAsync($"Message:{message.Id}", message.RandomNumber, TimeSpan.FromHours(24));
+
+            await redis.GetSubscriber().PublishAsync(redisChannelProcessedMessages, message.RandomNumber);
+        }
+
+        await context.SaveChangesAsync();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
     }
 
-    await context.SaveChangesAsync();
 };
 
 builder.Services.AddEndpointsApiExplorer();
@@ -69,12 +81,26 @@ using (var scope = app.Services.CreateScope())
 
     var runner = new ExclusiveTaskRunner(async () =>
     {
-        await process(context, redis);
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            var redisContext = services.GetRequiredService<IConnectionMultiplexer>();
+
+            await process(context, redis);
+        }
     });
+
+    // process messages when starting
+    await process(context, redis);
 
     redis.GetSubscriber().Subscribe(redisChannelMessages, (channel, message) =>
     {
-        var _ = runner.RunExclusiveAsync(); // not blcoking the messages loop, ignore the await
+        // Console.WriteLine("got message " + message.ToString());
+        Task.Run(async () =>
+        {
+            await runner.RunExclusiveAsync(); // not blcoking the messages loop, ignore the await
+        });
     });
 }
 
