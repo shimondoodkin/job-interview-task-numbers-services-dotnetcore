@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SharedProject.Data;
 using SharedProject.Models;
+using StackExchange.Redis;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,11 @@ using (var scope = app.Services.CreateScope())
     context.Database.Migrate();  // This applies pending migrations
 }
 
+var redisConnectionString = "redis:6379";
+var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
+var redisChannelMessages = new RedisChannel("messages", RedisChannel.PatternMode.Literal);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -46,18 +52,20 @@ app.MapGet("/", (ApplicationDbContext context) =>
 });
 
 
-app.MapGet("/message", (ApplicationDbContext context) =>
+async Task<IResult> sendMessage(String messageContent, ApplicationDbContext context, IConnectionMultiplexer redis)
 {
     try
     {
         var message = new Message
         {
-            Content = "test",
+            Content = messageContent,
             RandomNumber = new Random().Next(1, 10001)  // Generates a random number between 1 and 10000
         };
 
         context.Messages.Add(message);
         context.SaveChanges();
+
+        await redis.GetSubscriber().PublishAsync(redisChannelMessages, "1");
 
         return Results.Ok(message);
     }
@@ -65,29 +73,18 @@ app.MapGet("/message", (ApplicationDbContext context) =>
     {
         return Results.Problem(detail: ex.Message, statusCode: 500);
     }
+}
+
+app.MapGet("/message", (ApplicationDbContext context, IConnectionMultiplexer redis) =>
+{
+    return sendMessage("test", context, redis);
 })
 .WithDescription("creates a message with 'test' as message content and a random number");
 
 
-app.MapPost("/message", (MessageDto dto, ApplicationDbContext context) =>
+app.MapPost("/message", (MessageDto dto, ApplicationDbContext context, IConnectionMultiplexer redis) =>
 {
-    try
-    {
-        var message = new Message
-        {
-            Content = dto.Content,
-            RandomNumber = new Random().Next(1, 10001)  // Generates a random number between 1 and 10000
-        };
-
-        context.Messages.Add(message);
-        context.SaveChanges();
-
-        return Results.Ok(message);
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem(detail: ex.Message, statusCode: 500);
-    }
+    return sendMessage(dto.Content, context, redis);
 })
 .WithDescription("creates a message with given Content as message content and a random number");
 
