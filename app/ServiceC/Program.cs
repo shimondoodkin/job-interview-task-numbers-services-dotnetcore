@@ -2,12 +2,19 @@ using Microsoft.OpenApi.Models;
 using SharedProject.Models;
 using StackExchange.Redis;
 using System;
-using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Redis
-var redisConnectionString = builder.Configuration["Redis:ConnectionString"] ?? "redis:6379";
+// //Database
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// {
+//     var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+//     options.UseSqlServer(connectionString);
+// });
+
+//Redis
+var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "redis:6379";
 var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 var redisChannelProcessedMessages = new RedisChannel("processed-messages", RedisChannel.PatternMode.Literal);
@@ -26,7 +33,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ServiceC API v1"));
 }
-
 
 // redis subscriber
 using (var scope = app.Services.CreateScope())

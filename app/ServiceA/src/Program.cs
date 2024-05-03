@@ -10,14 +10,16 @@ using System;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the DI container.
+
+//Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("DefaultConnection");
     options.UseSqlServer(connectionString);
-
 });
 
-var redisConnectionString = "redis:6379";
+//Redis
+var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "redis:6379";
 var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 var redisChannelMessages = new RedisChannel("messages", RedisChannel.PatternMode.Auto);
