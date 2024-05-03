@@ -33,3 +33,41 @@ to craete a context object i used the commands
  - if redis is shared desided to not use redis "CONFIG SET notify-keyspace-events KEA" and subscribe to "__keyspace@0__:message:*" because it could trigger on many otyher keys too much not requried, rather i desided to send it twice to redis once for storage and once for pubsub.
  - 
 
+# to develop it
+
+ need to run the dev docker container , it is possible to open terminal to /app/ServiceA/ in vscode and then run `dotnet run` you can open several terminals in parallel (split) and run all at once
+
+ There is solution view in bottom of file explorer of vscode if you install c# vscode extension
+ I have added existing projects to the solution and after that I have added dependency of shared project .
+
+# usage it is possible to trigger the random number from curl
+
+for project ServiceA
+
+```
+curl http://localhost:5114/message
+
+output:
+{"id":43,"content":"test","randomNumber":7951,"processed":false}root@c3dbb65a6427:/app/Ser
+```
+
+for project ServiceB, for development
+
+```
+
+curl http://localhost:5029/process
+
+output:
+"processed ok"
+```
+
+
+for project SharedProject, for development
+```
+
+curl http://localhost:5030/testdb
+
+output:
+"Database connection successful."
+```
+

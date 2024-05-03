@@ -86,8 +86,8 @@ app.MapPost("/message", (MessageDto dto, ApplicationDbContext context, IConnecti
 {
     return sendMessage(dto.Content, context, redis);
 })
-.WithDescription("creates a message with given Content as message content and a random number");
-
+.WithDescription("creates a message with given Content as message content and a random number")
+.WithOpenApi();
 
 app.Run();
 

@@ -130,8 +130,8 @@ app.MapGet("/process", async (ApplicationDbContext context, IConnectionMultiplex
         return Results.Problem(detail: ex.Message, statusCode: 500);
     }
 })
-.WithDescription("Triggers message processing manually");
-
+.WithDescription("Triggers message processing manually")
+.WithOpenApi();
 
 
 app.Run();
