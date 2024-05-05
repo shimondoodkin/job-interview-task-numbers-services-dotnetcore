@@ -1,3 +1,15 @@
+# job-interview-task-numbers-services-dotnetcore
+
+#develop it 
+ - docker-compose up -d
+ - from Vs Code  docker extension attach to dev container 
+ - in app folder See Services projects, in each project you can run `dotnet run` 
+
+
+# running tests
+ - tests are with xunit
+ - currently in app SeviceA, you can run `dotnet test`
+
 ## Log of Design Decisions
 
 - Use Git to version control the project.
