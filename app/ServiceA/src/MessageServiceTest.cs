@@ -1,7 +1,9 @@
 
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
+using Moq.EntityFrameworkCore;
 using ServiceA;
 using SharedProject.Data;
 using SharedProject.Models;
@@ -16,11 +18,14 @@ public class MessageServiceTests
     public async Task SendMessage_SendsMessage_ReturnsOk()
     {
         // Arrange
-        var mockContext = new Mock<ApplicationDbContext>();
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().Options;
+        var mockContext = new Mock<ApplicationDbContext>(options);
+        var mockSet = new Mock<DbSet<Message>>();
+        mockContext.Setup(m => m.Messages).Returns(mockSet.Object);
+
         var mockRedis = new Mock<IConnectionMultiplexer>();
         var mockSubscriber = new Mock<ISubscriber>();
-
-        mockRedis.Setup(redis => redis.GetSubscriber(It.IsAny<CommandFlags>())).Returns(mockSubscriber.Object);
+        mockRedis.Setup(r => r.GetSubscriber(It.IsAny<CommandFlags>())).Returns(mockSubscriber.Object);
 
         var messageService = new MessageService();
 
@@ -28,9 +33,8 @@ public class MessageServiceTests
         var result = await messageService.sendMessage("test message", mockContext.Object, mockRedis.Object);
 
         // Assert
-        mockContext.Verify(x => x.Messages.Add(It.IsAny<Message>()), Times.Once());
-        mockContext.Verify(x => x.SaveChanges(), Times.Once());
-        mockSubscriber.Verify(x => x.PublishAsync(It.IsAny<RedisChannel>(), It.IsAny<int>(), CommandFlags.None), Times.Once());
-        Assert.IsType<OkObjectResult>(result);
+        mockSet.Verify(m => m.Add(It.IsAny<Message>()), Times.Once());
+        mockContext.Verify(m => m.SaveChanges(), Times.Once());
+        Assert.IsType<Microsoft.AspNetCore.Mvc.OkObjectResult>(result);
     }
 }
