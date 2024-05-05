@@ -42,11 +42,11 @@ services:
       - ./redis_data:/data
 
   servicea:
-    image: mcr.microsoft.com/dotnet/sdk:latest
+#    image: mcr.microsoft.com/dotnet/sdk:latest
     restart:  unless-stopped
 
-#    build:
-#      context: ./app/ServiceA
+    build:
+      context: ./app/ServiceA
     depends_on:
       - mssql
     environment:
@@ -57,10 +57,10 @@ services:
 
   serviceb:
     restart: unless-stopped
-    image: mcr.microsoft.com/dotnet/sdk:latest
+#    image: mcr.microsoft.com/dotnet/sdk:latest
 
-#    build:
-#      context: ./app/ServiceB
+    build:
+      context: ./app/ServiceB
     depends_on:
       - mssql
       - redis
@@ -71,10 +71,11 @@ services:
       - "20082:80"
 
   servicec:
-    image: mcr.microsoft.com/dotnet/sdk:latest
+
+#    image: mcr.microsoft.com/dotnet/sdk:latest
+    build:
+      context: ./app/ServiceC
     restart:  unless-stopped
-#    build:
-#      context: ./app/ServiceC
     depends_on:
       - redis
     environment:
