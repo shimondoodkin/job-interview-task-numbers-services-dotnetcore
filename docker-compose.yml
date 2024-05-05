@@ -85,8 +85,8 @@ services:
     environment:
       - CONNECTION_STRING=Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
       - REDIS_CONNECTION_STRING=redis:6379
-    # ports:
-    #   - "20083:8080"
+    ports:
+      - "3001:8080"
 
   dev:
     image: mcr.microsoft.com/dotnet/sdk:latest

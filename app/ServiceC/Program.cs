@@ -60,7 +60,7 @@ app.MapGet("/processed-messages", async (IConnectionMultiplexer redis) =>
     foreach (var key in keys)
     {
         var value = await db.StringGetAsync(key);
-        messages.Add($"{key} = {value}");
+        messages.Add($"{value}");
     }
 
     return Results.Ok(messages);
