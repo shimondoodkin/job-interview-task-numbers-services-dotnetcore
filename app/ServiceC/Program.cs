@@ -2,6 +2,7 @@ using Microsoft.OpenApi.Models;
 using SharedProject.Models;
 using StackExchange.Redis;
 using System;
+using System.Collections;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,11 +15,13 @@ var builder = WebApplication.CreateBuilder(args);
 // });
 
 //Redis
-var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "redis:6379";
+var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "";
+Console.WriteLine("redisConnectionString " + redisConnectionString);
 var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 var redisChannelProcessedMessages = new RedisChannel("processed-messages", RedisChannel.PatternMode.Literal);
 
+//
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

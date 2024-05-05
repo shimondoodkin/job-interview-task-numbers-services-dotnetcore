@@ -15,12 +15,15 @@ var builder = WebApplication.CreateBuilder(args);
 //Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+    var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? "";
+    Console.WriteLine("connectionString " + connectionString);
     options.UseSqlServer(connectionString);
 });
 
 //Redis
-var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "redis:6379";
+var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING") ?? "";
+Console.WriteLine("redisConnectionString " + redisConnectionString);
+
 var redis = ConnectionMultiplexer.Connect(redisConnectionString);
 builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
 builder.Services.AddSingleton(new MessageService());

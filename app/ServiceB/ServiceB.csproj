@@ -18,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedProject\SharedProject.csproj" />
+    <ProjectReference Include="..\SharedProject\SharedProject.csproj" OutputItemType="Library" />
   </ItemGroup>
+
 
 </Project>

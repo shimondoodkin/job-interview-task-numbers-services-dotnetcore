@@ -1,5 +1,14 @@
 # job-interview-task-numbers-services-dotnetcore
 
+# starting the 
+
+ The application consists of 3 services. when running docker-compose launches 3 services and the 2 databases. ServiceA has an exposed port 3000 external to 8080 internal. ServiceC prints log of the received multiplied numbers. To test the system first you need to see the logs then to submit a message that will create a random number the number will pass through SQL Server and Redis, And then will be received by ServiceC and it will be printed in the log.
+
+ - docker-compose up -d servicea serviceb servicec
+ - docker logs -f numbers-task_servicec_1
+ - curl http://127.0.0.1:3000/message
+
+
 #develop it 
  - docker-compose up -d
  - from Vs Code  docker extension attach to dev container 

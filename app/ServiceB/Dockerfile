@@ -1,20 +1,28 @@
-# ./app/ServiceB/Dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
-EXPOSE 80
-
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+# Use the official Microsoft .NET SDK image for building the project
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["ServiceB.csproj", "./"]
-RUN dotnet restore "ServiceB.csproj"
+
+# perbuild 
+COPY ["SharedProject/SharedProject.csproj", "SharedProject/"]
+COPY ["ServiceB/ServiceB.csproj", "ServiceB/"]
+
+RUN dotnet restore "SharedProject/SharedProject.csproj"
+RUN dotnet restore "ServiceB/ServiceB.csproj"
+
+
+# Copy the source code and build the application
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "ServiceB.csproj" -c Release -o /app/build
+
+# remove some files to resolve ambiguity in publishing
+RUN rm -f "SharedProject/appsettings.json"
+
+RUN dotnet build "ServiceB/ServiceB.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ServiceB.csproj" -c Release -o /app/publish
+RUN dotnet publish "ServiceB/ServiceB.csproj" -c Release -o /app/publish
 
-FROM base AS final
+# Use the official Microsoft .NET runtime image for running the application
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "ServiceB.dll"]

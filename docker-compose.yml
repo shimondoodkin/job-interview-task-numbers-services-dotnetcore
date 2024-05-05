@@ -46,43 +46,47 @@ services:
     restart:  unless-stopped
 
     build:
-      context: ./app/ServiceA
+      context: ./app/
+      dockerfile: ./ServiceA/Dockerfile
     depends_on:
       - mssql
+      - redis
     environment:
-      - CONNECTION_STRING="Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
-      - REDIS_CONNECTION_STRING="redis:6379"
+      - CONNECTION_STRING=Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;
+      - REDIS_CONNECTION_STRING=redis:6379
     ports:
-      - "20081:80"
+      - "3000:8080"
 
   serviceb:
     restart: unless-stopped
 #    image: mcr.microsoft.com/dotnet/sdk:latest
 
     build:
-      context: ./app/ServiceB
+      context: ./app/
+      dockerfile: ./ServiceB/Dockerfile
     depends_on:
       - mssql
       - redis
     environment:
-      - CONNECTION_STRING="Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
-      - REDIS_CONNECTION_STRING="redis:6379"
-    ports:
-      - "20082:80"
+      - CONNECTION_STRING=Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;
+      - REDIS_CONNECTION_STRING=redis:6379
+    # ports:
+    #   - "20082:8080"
 
   servicec:
 
 #    image: mcr.microsoft.com/dotnet/sdk:latest
     build:
-      context: ./app/ServiceC
+      context: ./app/
+      dockerfile: ./ServiceC/Dockerfile
     restart:  unless-stopped
     depends_on:
       - redis
     environment:
-      - CONNECTION_STRING="Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
-      - REDIS_CONNECTION_STRING="redis:6379"
-    ports:
-      - "20083:80"
+      - CONNECTION_STRING=Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
+      - REDIS_CONNECTION_STRING=redis:6379
+    # ports:
+    #   - "20083:8080"
 
   dev:
     image: mcr.microsoft.com/dotnet/sdk:latest
@@ -91,9 +95,9 @@ services:
       - ./app:/app
       - ./app-root:/root
     environment:
-      - CONNECTION_STRING="Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;"
-      - REDIS_CONNECTION_STRING="redis:6379"
+      - CONNECTION_STRING=Server=mssql,1433;Database=mesages;User Id=sa;Password=example123;trusted_connection=false;Encrypt=False;
+      - REDIS_CONNECTION_STRING=redis:6379
     working_dir: /app
     command: tail -f /dev/null # Keeps the container running for development purposes
-    ports:
-      - "20080:80"
+    # ports:
+    #   - "20080:80"
