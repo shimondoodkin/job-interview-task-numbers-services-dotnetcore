@@ -92,3 +92,7 @@ output:
 "Database connection successful."
 ```
 
+
+
+# what would i do diffrerently? 
+ to make it scalable i would make ServiceA to send values to a redis queue. service b process redis queue. then another service would save or update DB.
