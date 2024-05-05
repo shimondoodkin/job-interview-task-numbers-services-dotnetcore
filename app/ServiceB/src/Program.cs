@@ -8,7 +8,6 @@ using System;
 using StackExchange.Redis;
 using SharedProject.Utils;
 using System.Diagnostics;
-using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
